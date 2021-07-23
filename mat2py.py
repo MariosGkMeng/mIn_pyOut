@@ -502,7 +502,7 @@ Lines = Lines1
 
 
 # Substituting special functions =============================================
-is_under_dev = False
+is_under_dev = True
 if not is_under_dev:
     Lsubs = len(special_functions)
     words_pattern = '[a-z]+'
