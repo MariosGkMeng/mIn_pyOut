@@ -412,17 +412,26 @@ rng_shift_indent0 = range(-1)
 
 exception_indexes = ['end']
 for matFileNm in matFileNms:
+    # Loop through all files to convert
+    
     rngs_shift_indent = []
     txt_subst = txt_subst0
     Lsubs = len(txt_subst0)
     flNm = filePath + '\\' + matFileNm + '.m'
     file1 = open(flNm, 'r', encoding="UTF-8") #
+    
+    # 👇🏼  Get lines of the current MATLAB file
     Lines = file1.readlines()
-    Lines1 = []
+    
+    # 👇🏼 Denote the list of code lines that have undergone a modification with "Line1": 
+    Lines1 = [] 
+    
     print('Converting ' + flNm + '\n'*2)
     decorator_calls = 0
     # print(get_vector_elements.calls) 
     # print(get_vector_elements.error_msg)
+    
+    # 👇🏼 Character substitutions ================================================================
     for ln in Lines:
 
         i_ln += 1
@@ -437,7 +446,10 @@ for matFileNm in matFileNms:
                 Lt = len(txti)
                 txt0 = txti[0]
                 txt1 = txti[1]
-                txtMd = txti[2] # text mode
+                
+                # 👇🏼 text mode
+                txtMd = txti[2] 
+                
                 if txtMd == 'any':     
                     ln10 = ln1
                     ln1 = ln1.replace(txt0, txt1)
