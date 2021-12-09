@@ -459,15 +459,22 @@ for matFileNm in matFileNms:
                                 comm_below = True
 
                         if txt0 == 'switch ': 
+
+                            # n_switch_case0: Count of already converted switch-case statements
+                            # n_switch_case: Count of switch-case statements detected so far
+
                             n_switch_case0 = n_switch_case
-                            n_switch_case += 1        
-                            # find the "end" of this "switch-case" operation
+                            n_switch_case += 1    
+
+
+                            # 👇🏼 find the "end" of current "switch-case" statement =========================
                             iLnSwCase = 0
                             for ii0 in range(10000):
                                 lnd = Lines[ii0+i_ln]
                                 lnd_no_bl = lnd.replace(' ', '')
                                 if lnd_no_bl.startswith('end'):
                                     break
+                            # 👆🏼 ===========================================================================    
 
                             iLnSwCase = ii0+1
                             # all lines that should have their identation changed
