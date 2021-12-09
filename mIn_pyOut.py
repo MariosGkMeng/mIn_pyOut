@@ -485,10 +485,15 @@ for matFileNm in matFileNms:
                         if txt0 == 'case ': 
                             if n_switch_case0 != n_switch_case:
                                 n_switch_case0 = n_switch_case
+
+                                # 👇🏼 Change 'elif' to 'if', because "case" has been replace with "elif:",
+                                # 👇🏼 which means that the first "elif:" should be corrected
                                 ln1 = ln1.replace('elif', 'if')      
+                                # 
 
                 elif text_mode == 'start':
-                    # get blanks before any first char
+
+                    # 👇🏼 get blanks before any first char ===================================================
                     if txt0 in ln1:
                         idxx1 = ln1.find(txt0)
                         i_b = -1
@@ -498,6 +503,9 @@ for matFileNm in matFileNms:
                             ln1 = ' '*i_b + txt1 #+ ln1[idxx1-1:]
                         ln1 = ln1 + '\n'
                         #print(ln1[idxx1-1:])
+                    # 👆🏼 ======================================================================================================
+
+
                 elif text_mode == 'function':
                     #             # not completely correct: 
                     txt01 = txt0 + '('
