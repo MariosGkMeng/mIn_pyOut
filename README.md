@@ -1,7 +1,7 @@
 # mIn_pyOut
 Matlab to Python code translator
 
-# Possible conversions so far:
+# Available conversions so far:
 
 | Converted functionalities                                          | MATLAB        | Python         |
 | ------------------------------------------------------------------ | ------------- | -------------- |
