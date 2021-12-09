@@ -10,11 +10,12 @@
 #   - search for word "weakness" --> when solved, delete the word "weakness"
 # 
 # TODO: 
-# 1. FIRST, solve problem 5
+# 1. Solve problem 5
+# 2. SEARCH "PROBLEM 1"
 #
 #
 # List of bugs-problems
-# 1.OK Add exception for index that is looped starting from 0 and do not add "-1"
+# 1. ✔ Add exception for index that is looped starting from 0 and do not add "-1"
 #   b. TODO Avoid confusion (sometimes that index is not looped, but user-set)
 # 2. Conditional operations with <>=. DO they need change in indexing?
 # 3. Changing vectors ("[a b c] to [a,b,c]" does not work for all cases!)
@@ -35,7 +36,7 @@ vec = lambda x: np.array(x)
 for i in range(15): print("      ")
 
 
-# UNDER DEVELOPMENT Define decorator that prints erratically converted lines:
+# UNDER DEVELOPMENT: Define decorator that prints erratically converted lines:
 def check_if_erratic_conversion(func):
 
     def wrapper(*args, **kwargs):
@@ -302,7 +303,7 @@ def store_line(Ln1, ln1, err_msg_4user):
 filePath = 'C:\\Users\\mario\\Dropbox\\migration'
 # Add the matlab files (without the extension) below. You can add more than one
 # In case you want to convert only one file, please keep the matFileNms as a list object
-matFileNms = ['matlab_code_name_1', 'matlab_code_name_2', 'matlab_code_name_n']   
+matFileNms = ['SOLVE_PROBLEM']   
 
 # ================================================================================
 
@@ -311,7 +312,7 @@ matFileNms = ['matlab_code_name_1', 'matlab_code_name_2', 'matlab_code_name_n']
 
 # List of MATLAB functions, so that the function names are not treated as variable names
 list_py_funcs = [\
-    'zeros', 'ones', 'get_scaled_time', 'range'\
+    'zeros', 'ones', 'get_scaled_time', 'range',\
     'reshape', 'polyval', 'len', 'length', 'eval',\
     'exec', 'error', 'print', 'disp', 'warning', 'any', 'all',\
     'obstacle_generator', 'IPOPT_SOLVE', 'exist', \
@@ -331,7 +332,8 @@ lst_operators = [' ', '+', '-', '*', '/', ':', ';',\
 # , 'below' ['~=',          '!=',                'any'],\
 
 
-# Explicit text substitutions
+# Explicit text substitutions ===========================================================
+# =======================================================================================
 # NOTE: comment symbols should always be the first to be replaced!
 #   [char0,         char_replace,        type_of_replacement]
 #     The parameter type_of_replacement can get the following values:
@@ -343,6 +345,8 @@ lst_operators = [' ', '+', '-', '*', '/', ':', ';',\
 #     |    'start' | Replace char if it's at the beginning of the line |
 #     | 'function' | Replace char as a function                        |
 #     |            |                                                   |
+# =======================================================================================
+# =======================================================================================
 
 txt_subst0 = [\
     ['%',           '#',                 'any'] ,\
@@ -369,6 +373,7 @@ txt_subst0 = [\
     ['true',        'True',              'any'],\
     ['false',       'False',             'any']] 
 
+# Substitutions that need "np."
 txt_subst_dot = [\
     ['zeros',   'np.zeros'] ,\
     ['ones',    'np.ones'] ,\
@@ -620,7 +625,7 @@ for matFileNm in matFileNms:
     Lines = Lines1
     # ================================================================================
 
-    # Convert for loop =======================================================================
+    # Convert "for" loop =======================================================================
 
     Lines1 = []
     for ln in Lines:
@@ -735,7 +740,7 @@ for matFileNm in matFileNms:
                     lst_idx = lst_idx + xx1.y
                 
                 if len(lst_idx) == 0:
-                    break # "DIRTY-BAD" PROGRAMMING ALERT!!!
+                    break # PROBLEM 2: "DIRTY-BAD" PROGRAMMING ALERT!!!
                 # print(lst_idx)
                 # print(zgi - par_count)
 
@@ -755,7 +760,9 @@ for matFileNm in matFileNms:
             wrdy.get_word_before_par(ln_before_par, lst_operators, idx0)
             word_before_par = wrdy.word_before_par
 
-            if (not ('#' in ln_before_par)) and len(word_before_par) > 0: # non commented line
+            if (not ('#' in ln_before_par)) and len(word_before_par) > 0: 
+                # if the line is not a commented line
+
                 wrdy.get_par_content(ln1, idx0, i_pr, ln_after_par, \
                     word_before_par, list_py_funcs, par_type)
                 par_content = wrdy.par_content
@@ -1005,7 +1012,7 @@ for matFileNm in matFileNms:
     # np.zeros(n, 1) or np.zeros(1, n) to np.zeros(n)=================================
     Lines1 = []
     vec_f = [', 1','1, ', ',1', '1,', ',1', '1,']
-    # Weak programming above!
+    # PROBLEM 1. Weak programming above!
     for ln in Lines:
         ln1 = ln
         if 'np.zeros' in ln1:
