@@ -448,9 +448,9 @@ for matFileNm in matFileNms:
                 txt1 = txti[1]
                 
                 # 👇🏼 text mode
-                txtMd = txti[2] 
+                text_mode = txti[2] 
                 
-                if txtMd == 'any':     
+                if text_mode == 'any':     
                     ln10 = ln1
                     ln1 = ln1.replace(txt0, txt1)
                     if ln10 != ln1: # something was actually replaced
@@ -480,7 +480,7 @@ for matFileNm in matFileNms:
                                 n_switch_case0 = n_switch_case
                                 ln1 = ln1.replace('elif', 'if')      
 
-                elif txtMd == 'start':
+                elif text_mode == 'start':
                     # get blanks before any first char
                     if txt0 in ln1:
                         idxx1 = ln1.find(txt0)
@@ -491,13 +491,13 @@ for matFileNm in matFileNms:
                             ln1 = ' '*i_b + txt1 #+ ln1[idxx1-1:]
                         ln1 = ln1 + '\n'
                         #print(ln1[idxx1-1:])
-                elif txtMd == 'function':
+                elif text_mode == 'function':
                     #             # not completely correct: 
                     txt01 = txt0 + '('
                     txt11 = txt1 + '('
                     ln1 = ln1.replace(txt01, txt11)
                 
-                elif txtMd == 'end':
+                elif text_mode == 'end':
                     
                     if txt0 in ln1:
                         ln1 = ln1.replace('\n', '')
