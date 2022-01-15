@@ -24,3 +24,8 @@ Matlab to Python code translator
 | matFileNms    | list object wherein the names of the MATLAB files for translation are given (without the extension)                                   |
 | filePath      | string variable wherein the path of the folder containing the file is given                                                           |
 | list_py_funcs | List of MATLAB and Python function names. This is needed in order for the algorithm not to confuse variable names with function names | 
+
+
+## MATLAB and Python functions
+
+The main python script of the repository contains the variable "list_py_funcs" (see section "User defined parameters"). Since MATLAB uses indexing via parentheses as well as passing function arguments in parentheses, whereas Python uses brackets for the former procedure, Python will treat a function as a variable by default. To avoid this, simply add the function name to the list variable "list_py_funcs", so that it is treated as a function.
