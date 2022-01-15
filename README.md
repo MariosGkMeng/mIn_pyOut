@@ -29,3 +29,8 @@ Matlab to Python code translator
 ## MATLAB and Python functions
 
 The main python script of the repository contains the variable "list_py_funcs" (see section "User defined parameters"). Since MATLAB uses indexing via parentheses as well as passing function arguments in parentheses, whereas Python uses brackets for the former procedure, Python will treat a function as a variable by default. To avoid this, simply add the function name to the list variable "list_py_funcs", so that it is treated as a function.
+
+# Open issues
+- [ ] Convert function handles (MATLAB) to lambda functions (Python)
+- [ ] For vector conversion
+	- [ ] Deal with nested vectors (so far no nested vectors are correctly converted. For example: M = [ [1; 1; 1], [1; 1; 1]  ])
