@@ -34,3 +34,4 @@ The main python script of the repository contains the variable "list_py_funcs" (
 - [ ] Convert function handles (MATLAB) to lambda functions (Python)
 - [ ] For vector conversion
 	- [ ] Deal with nested vectors (so far no nested vectors are correctly converted. For example: M = [ [1; 1; 1], [1; 1; 1]  ])
+- [ ] Open issues written in the beginning of the main script itself
