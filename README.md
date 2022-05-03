@@ -2,6 +2,7 @@
 Matlab to Python code translator
 
 # Available conversions so far
+## General
 
 | Converted functionalities                                          | MATLAB        | Python         |
 | ------------------------------------------------------------------ | ------------- | -------------- |
@@ -12,6 +13,13 @@ Matlab to Python code translator
 | indexing system                                                    | i = 1,2,...10 | i = 0,1,2,...9 |
 | Vectors (does not work for nested vectors and needs some debuggin) |               |                |
 | Matrices, but so far without line brakes                           |               |                |
+
+
+## Specific Functions
+
+| Converted Functionalities | MATLAB                        | Python                                          |
+| ------------------------- | ----------------------------- | ----------------------------------------------- |
+| MATLAB "find" function    | idx_max_a = find(a == max(a)) | idx = [i for i, x in enumerate(a) if x\==max(a)] | 
 
 
 
