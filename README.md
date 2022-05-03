@@ -19,7 +19,7 @@ Matlab to Python code translator
 
 ## User defined parameters
 
-| Variable name | Description                                                                                                                           |
+| Variable name (inside the main script) | Description                                                                                                                           |
 | ------------- | --------------------------------- |
 | matFileNms    | list object wherein the names of the MATLAB files for translation are given (without the extension)                                   |
 | filePath      | string variable wherein the path of the folder containing the file is given                                                           |
