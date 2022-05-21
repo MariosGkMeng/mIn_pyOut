@@ -37,7 +37,7 @@
 #     |__ Solved by adding "=" to list of math operators
 # 14. ✔  "[i for i in x]" operations are inserted in vector transformations!!
 # 15. ✔ MATLAB lines that are not separated by line break don't have their ";" end removed!
-# 16. CORR: Some variables need to be defined in Python!
+# 16. CORR: Variables need to be defined in Python!
 # 17. CORR: Problem in Sec. 7: 
 #           |__ 'f_get_Q_r_i = @(Ux)(sum(Ux(d.i_U_fQr)));' ---mat2py---> sum(Ux[d['i_U_fQr'] - 1] 1](sum(Ux(d['i_U_fQr'])))
 #           |__ 'f_get_Q_r_i =(sum(Ux(d.i_U_fQr)));' is correctly converted!
@@ -72,6 +72,13 @@ for i in range(15): print("      ")
 # popo = re.findall(patt1, wrd)
 
 # print('')
+
+# patt = r"\w+(\.\w+)*" # (word, followed by word in "['']")
+# patt1 = r"[\.\w+]*"
+# wrd = 'd.fld.pip'
+# popo = re.findall(patt1, 'x = d.fld1.fld2')
+# print(popo)
+# x_dot = d.init_cond(4);
 
 # # \==================================================
 
@@ -129,9 +136,12 @@ class parenthesis_cls():
         # recognise dict variable
         # \==================================================
         
+        patt = r"[\['\w+'\]+]*"
         
-        patt = r"\w+\['\w+'\]" # (word, followed by word in "['']")
+        # patt = r"\w+\['\w+'\]" # (word, followed by word in "['']") 
         lstDicts = re.findall(patt, s_in)
+        lstDicts = [x for x in lstDicts if len(x)>0]
+        lstDicts = [x for x in lstDicts if "['" in x]
         lstDicts_converted = []
         for l in lstDicts:
             l_conv = l.replace("['", '__').replace("']", '')
@@ -267,7 +277,7 @@ def get_vector_elements(c_in):
 
     # Weakness - Start: nested vectors ================================================
     # ==================================================================================
-    #   Does not work on assignments such as
+    #  ✔ Does not work on assignments such as
     #       - d['field'] = [1;2;3]
     #       - h = [d['field'];2;3] 
     # cond1 and cond2 are only here for now, so that we do not deal with nested vectors !
@@ -774,60 +784,97 @@ for matFileNm in matFileNms:
 
     #  Sec. 4: Handle struct variables ========================================================
     # Basically convert "d.field_1" to "d['field_1']"
-
+    
     Lines1 = []
-    for ln in Lines:
-        ln1 = ln
-        if '.' in ln1:
-            flds = []
-            xx = findOccurrences(ln1, '.')
-            idx_dot = xx.y        
-            n_flds = 0
-            for inn in range(len(idx_dot)):
-                if inn > 0:
-                    # re-do findOccurences because ln1 changes in each iteration
-                    xx = findOccurrences(ln1, '.')
-                    idx_dot = xx.y        
-                if len(idx_dot) == 0: break
-                i = idx_dot[inn-n_flds]  
+    dev_use_regex = True # OPT: can just use regex
+    if dev_use_regex:
+        # patt = r"\w+\['\w+'\]" # (word, followed by word in "['']")
+        # patt = r"\w+\.\w+" # (word, followed by word in "['']")
+        patt = r"[\.\w+]*"
+        DICTS = []
+        for ln in Lines:
+            ln1 = ln
+            lstDS = dict()
+            lstDS['struct'] = re.findall(patt, ln)
+            
+            lstDS['struct'] = [x for x in lstDS['struct'] if len(x)>0]
+            lstDS['struct'] = [x for x in lstDS['struct'] if '.' in x]
+            
+            lstDS['dict'] = []
+            for iil, l in enumerate(lstDS['struct']):
+                words = re.findall(r"\w+", l)
+                if len(words) < 2: break
+                s = words[0]
+                
+                # declare dict
+                if iil==0:
+                    if not s in DICTS:
+                        DICTS.append(s)
+                        for illn, lln in enumerate(ln1):
+                            if lln != ' ': break
+                        Lines1 = store_line(Lines1, illn*' ' + s + ' = dict()\n', get_vector_elements.error_msg)
+                #
+                
+                for wi in words[1:]:
+                    s += "['" + wi + "']"
+                lstDS['dict'].append(s) 
+                ln1 = ln1.replace(l, s)
 
-                if inn+1 < len(idx_dot):  
-                    i1 = idx_dot[inn+1]+1
-                else:
-                    i1 = len(ln1)
-                # check if struct variable is in a comment 
-                ln_before = ln1[:i]
-                xx = findOccurrences(ln_before, '#')       
-                idx = xx.y
-                if np.mod(len(idx), 2) == 0:
-                    # is not in comment
-                    ln1_after = ln1[i + 1:i1]
-                    p1 = len(ln1_after) - 1
-                    fldi = ln1_after[0:p1]
-                    for ltr in lst_operators:
-                        xx = findOccurrences(ln1_after, ltr)       
-                        idx = xx.y
-                        if  (len(idx) > 0):
-                            if idx[0] < p1:
-                                p1 = idx[0]
-                            # print(ln1_after[0:p1])
-                            fldi = ln1_after[0:p1]
-                            if len(fldi) > 0:
-                                if fldi[-1] in lst_operators:
-                                    fldi = fldi[:-1]
-                                elif fldi[0] in lst_operators:
-                                    fldi = fldi[1:]
-                                # break
-                    flds.append(fldi)
-                n_flds = len(flds)
-                for fld in flds:
-                    dum0 = '.' + fld
-                    dum1 = "['" + fld + "']"
-                    is_num = fld.isnumeric()
-                    if not is_num: ln1 = ln1.replace(dum0, dum1)
-        Lines1 = store_line(Lines1, ln1, get_vector_elements.error_msg)
+            Lines1 = store_line(Lines1, ln1, get_vector_elements.error_msg)
+        Lines = Lines1        
+    else:
+        for ln in Lines:
+            ln1 = ln
+            if '.' in ln1:
+                flds = []
+                xx = findOccurrences(ln1, '.')
+                idx_dot = xx.y        
+                n_flds = 0
+                for inn in range(len(idx_dot)):
+                    if inn > 0:
+                        # re-do findOccurences because ln1 changes in each iteration
+                        xx = findOccurrences(ln1, '.')
+                        idx_dot = xx.y        
+                    if len(idx_dot) == 0: break
+                    i = idx_dot[inn-n_flds]  
 
-    Lines = Lines1
+                    if inn+1 < len(idx_dot):  
+                        i1 = idx_dot[inn+1]+1
+                    else:
+                        i1 = len(ln1)
+                    # check if struct variable is in a comment 
+                    ln_before = ln1[:i]
+                    xx = findOccurrences(ln_before, '#')       
+                    idx = xx.y
+                    if np.mod(len(idx), 2) == 0:
+                        # is not in comment
+                        ln1_after = ln1[i + 1:i1]
+                        p1 = len(ln1_after) - 1
+                        fldi = ln1_after[0:p1]
+                        for ltr in lst_operators:
+                            xx = findOccurrences(ln1_after, ltr)       
+                            idx = xx.y
+                            if  (len(idx) > 0):
+                                if idx[0] < p1:
+                                    p1 = idx[0]
+                                # print(ln1_after[0:p1])
+                                fldi = ln1_after[0:p1]
+                                if len(fldi) > 0:
+                                    if fldi[-1] in lst_operators:
+                                        fldi = fldi[:-1]
+                                    elif fldi[0] in lst_operators:
+                                        fldi = fldi[1:]
+                                    # break
+                        flds.append(fldi)
+                    n_flds = len(flds)
+                    for fld in flds:
+                        dum0 = '.' + fld
+                        dum1 = "['" + fld + "']"
+                        is_num = fld.isnumeric()
+                        if not is_num: ln1 = ln1.replace(dum0, dum1)
+            Lines1 = store_line(Lines1, ln1, get_vector_elements.error_msg)
+
+        Lines = Lines1
     # ================================================================================
 
     #  Sec. 5: Convert "for" loop =======================================================================
