@@ -14,28 +14,37 @@
 # 2. SEARCH "PROBLEM 1"
 #
 #
-# List of bugs-problems
+# List of bugs-problems-things that can be optimized
 # =================> Test script "plant_model_1.m". Has many mistakes! <=======================
 # 1. ✔ Add exception for index that is looped starting from 0 and do not add "-1"
 #   b. TODO Avoid confusion (sometimes that index is not looped, but user-set)
-# 2. Conditional operations with <>=. DO they need change in indexing?
-# 3. Changing vectors ("[a b c] to [a,b,c]" does not work for all cases!)
-# 4. deal with nested vectors   
-# 5. Broken lines that are fixed again have problems
-# 6. Separate list of functions that are true for every script from script-dependent functions
-# 7. "zeros" functions cannot have two arguments!!
+# 2. CORR: Conditional operations with <>=. DO they need change in indexing?
+# 3. CORR: Changing vectors ("[a b c] to [a,b,c]" does not work for all cases!)
+# 4. CORR: deal with nested vectors 
+#           |
+#           ---> remove PATCH. 1 after that
+# 5. CORR: Broken lines that are fixed again have problems
+# 6. CORR: Separate list of functions that are true for every script from script-dependent functions
+# 7. CORR: "zeros" functions cannot have two arguments!!
 # 8. ✔ Sometimes MATLAB comment lines miss the "\n" at the end of the line
 #       They seem to loose it when handling the switch-case statement
 # 9. ✔ command: "is_for_loop = ln1.startswith(loopSyntax)" is incorrect!
-# 10. switch-case statement in plant_model_1.py has indentation problem
-# 11. decoding problem for "RUN_SIMULATION.m"
+# 10. CORR: switch-case statement in plant_model_1.py has indentation problem
+# 11. CORR: decoding problem for "RUN_SIMULATION.m"
 # 12. ✔ in Sec. 2: Identation problem for ln1 and ln2!
-#   |
-#   |__ Solved by identifying any potential identation on the existing line
+#     |__ Solved by identifying any potential identation on the existing line
 # 13. ✔ In Sec. 7, expressions such as "aa==max" are taken as a single variable!
-#   |
-#   |__ Solved by adding "=" to list of math operators
+#     |__ Solved by adding "=" to list of math operators
 # 14. ✔  "[i for i in x]" operations are inserted in vector transformations!!
+# 15. ✔ MATLAB lines that are not separated by line break don't have their ";" end removed!
+# 16. CORR: Some variables need to be defined in Python!
+# 17. CORR: Problem in Sec. 7: 
+#           |__ 'f_get_Q_r_i = @(Ux)(sum(Ux(d.i_U_fQr)));' ---mat2py---> sum(Ux[d['i_U_fQr'] - 1] 1](sum(Ux(d['i_U_fQr'])))
+#           |__ 'f_get_Q_r_i =(sum(Ux(d.i_U_fQr)));' is correctly converted!
+# 18. CORR: 'GHG_CASADI_new_check_units' has many mistakes 
+# 19. CORR: When MATLAB line doesn't end with ";", it is not treated as a full line and is merged with the next!! 
+# 20. OPT: get_word_before_par ---> perhaps can make it more efficient via regex
+# 21. CORR: get_word_before_par: does not recognise existence of dict
 # =================================================================================
 # =================================================================================
 
@@ -59,8 +68,6 @@ def check_if_erratic_conversion(func):
     def wrapper(*args, **kwargs):
 
         # funLst = ['get_vector_elements']
-
-
         funNm = func.__name__
         # print(funNm)
         
@@ -129,7 +136,7 @@ class parenthesis_cls():
         self.word_before_par = word_before_par
 
     def get_par_content(self, ln1, idx0, i_pr, ln_after_par,\
-         word_before_par, list_py_funcs, par_type):
+         word_before_par, list_mat_py_funcs, par_type):
         
         par_type_open = par_type
         if par_type_open == '(': par_type_cl = ')'
@@ -140,7 +147,7 @@ class parenthesis_cls():
         par_content = ''
         txt_after_par_closed = ''
         jj = 0
-        cnd1 = not (word_before_par in list_py_funcs)
+        cnd1 = not (word_before_par in list_mat_py_funcs)
         if cnd1:
             for jj in range(len(ln_after_par)):
                 ln11 = ln_after_par[idx00:idx00+jj+1]
@@ -218,7 +225,7 @@ def get_vector_elements(c_in):
     # If it is a Matrix, then the conversion is handled inside the script
 
 
-    # List of math operations to NOT be confuses with vector elements
+    # List of math operations to NOT be confused with vector elements
     lst_operators = ['+', '-', '*', '/', '^']
     
 
@@ -280,11 +287,16 @@ def extract_from_line_breaks(c_in):
     #  - By "broken_lines", we refer to the signular command line that has been broken
     #    into multiple ones, due to its length
 
+
+    # Loop through lines
+    # \==================================================    
     for z, ch in enumerate(c_in):
         if ch.endswith("\n"):
             ch = ch[:-2].replace(' ', '')
             if not ch.endswith('\\'):
                 break
+    # \==================================================        
+    
     ln = ''       
     n_dum = 4   
     if z>0:
@@ -313,22 +325,18 @@ def store_line(Ln1, ln1, err_msg_4user):
 
 
     
-
-
-
 # Read the .m file ===============================================================
 filePath = 'C:\\Users\\mario\\Dropbox\\migration'
 # Add the matlab files (without the extension) below. You can add more than one
 # In case you want to convert only one file, please keep the matFileNms as a list object
-matFileNms = ['targetStatesInputs']   
-
+matFileNms = ['SOLVE_PROBLEM']   
 # ================================================================================
 
 # Direct text substitutions (that do NOT contain '.') =================================================
 # init_text final_text position_mode
 
 # List of MATLAB functions, so that the function names are not treated as variable names
-list_py_funcs = [\
+list_mat_py_funcs = [\
     'zeros', 'ones', 'get_scaled_time', 'range',\
     'reshape', 'polyval', 'len', 'length', 'eval',\
     'exec', 'error', 'print', 'disp', 'warning', 'any', 'all',\
@@ -338,7 +346,7 @@ list_py_funcs = [\
     'find', 'size', 'sin', 'cos', 'num2str', 'str',\
     'make_signals_continuous', 'strcmp', 'min',\
     'max', 'norm', 'eval_g', 'reshape', 'tan', 'plant_model',\
-    'update_problem_CASADI', 'jacobian', 'vertcat', 'Function', 'enumerate']
+    'update_problem_CASADI', 'jacobian', 'vertcat', 'Function', 'enumerate', 'ctr_memory']
 # ==================================================================================================
 
 # List of operators
@@ -351,7 +359,7 @@ lst_operators = [' ', '+', '-', '*', '/', ':', ';',\
 
 # Explicit text substitutions ===========================================================
 # =======================================================================================
-# NOTE: comment symbols should always be the first to be replaced!
+# ⚠ NOTE: comment symbols should always be the first to be replaced!
 #   [char0,         char_replace,        type_of_replacement]
 #     The parameter type_of_replacement can get the following values:
 #     ---------------------------------------------------------------------- 
@@ -363,7 +371,7 @@ lst_operators = [' ', '+', '-', '*', '/', ':', ';',\
 #     | 'function' | Replace char as a function                        |
 #     |            |                                                   |
 # 👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼👇🏼
-txt_subst0 = [\
+MAP_txt_subst = [\
     ['%',           '#',                 'any'] ,\
     [' ;',          '',                  'end'] ,\
     [';',           '',                  'end'] ,\
@@ -371,7 +379,7 @@ txt_subst0 = [\
     ['end',         '# end',             'start' ] ,\
     ['clc',         '# clc',             'start' ],\
     ['clear',       '# clear',           'start' ],\
-    ['else if',     'elif',              'any'] ,\
+    ['elseif',      'elif',              'any'] ,\
     ['else',        'else:',             'any'] ,\
     ['length',      'len',               'function'],\
     ['eval',        'exec',              'function'],\
@@ -439,8 +447,8 @@ for matFileNm in matFileNms:
     exception_indexes = ['end']
     rngs_shift_indent = []
     rngs_shift_indent_type = [] # Type of identation shift. Contains only integer numbers. 
-    txt_subst = txt_subst0
-    Lsubs = len(txt_subst0)
+    txt_subst = MAP_txt_subst
+    Lsubs = len(MAP_txt_subst)
     flNm = filePath + '\\' + matFileNm + '.m'
     file1 = open(flNm, 'r', encoding="UTF-8") #
     
@@ -455,11 +463,67 @@ for matFileNm in matFileNms:
     # print(get_vector_elements.calls) 
     # print(get_vector_elements.error_msg)
     
+    # Sec. 0: Split MATLAB lines that are stacked in the same text line ================================================================
+    Lines1 = []
+    for ln in Lines:
+        ln1 = ln
+        if ';' in ln1:
+            lns = ln1.split(';')
+            # Make sure that we are not dealing with vector or matrix
+            
+            if lns[-1].replace(' ', '') == '\n':
+                lns = lns[:-1]
+            cnd_more_than_one_cmd = True
+            
+            for lln in lns:
+                cnd_more_than_one_cmd *= ((len(lln)>0) and '=' in lln)
+            cnd = cnd_more_than_one_cmd and (len(lns) > 1)
+            # 👆🏼 So far this is the only definite condition we can use. If we have to deal with methods (OOP in MATLAB, this conditional will have to be modified)
+            if cnd:
+                n_blanks = 0
+                if len(ln1) > 0: 
+                    while (ln1[n_blanks] == ' ') and n_blanks<100: 
+                        n_blanks += 1
+                for lln in lns:
+                    n_blanks1 = 0
+                    if len(lln) > 0: 
+                        while (lln[n_blanks1] == ' ') and n_blanks1<100: 
+                            n_blanks1 += 1
+                    Lines1.append(n_blanks*' ' + lln[n_blanks1:] + ';\n')
+            else:
+                Lines1.append(ln1)
+        else:
+            Lines1.append(ln1)
+
+    Lines = Lines1
+    # ================================================================================================================================
+    
+    # # Sec. 0.1: Clean blanks that are not tabs:==========================================================================================================================================================
+    # Lines1 = []
+    # for ln in Lines:
+    #     ln1 = ln
+    #     n_blanks = 0
+    #     if len(ln1) > 0: 
+    #         while (ln1[n_blanks] == ' ') and n_blanks<100: 
+    #             n_blanks += 1
+                
+    #     if n_blanks > 98:
+    #         print('')        
+    #     shft = np.mod(n_blanks, 4)
+    #     ln1 = ln1[shft+1:]
+    #     Lines1.append(ln1)
+        
+    # Lines = Lines1
+    # # ================================================================================================================================
+
+
+
     # Sec. 1: 👇🏼 Character substitutions ================================================================
+    Lines1 = []
     for ln in Lines:
         i_ln += 1
         ln1 = ln
-
+        # print(ln1)
         if comm_below:
             ln1 = '#' + ln1# + '\n'
             comm_below = False
@@ -567,10 +631,11 @@ for matFileNm in matFileNms:
                                 ln1 = ln1nC[:-len(txt0)]+ln1[i_C:] + '\n'
 
         for irng, rng_shft_i in enumerate(rngs_shift_indent):
+            
             rng_shft_type_i = rngs_shift_indent_type[irng]
             iDum =  [jj for jj, x in enumerate(rng_shft_i) if x==i_ln] 
             if len(iDum)>0: iDum = iDum[0]
-            if i_ln in rng_shft_i and rng_shft_type_i[iDum] != 0: 
+            if i_ln in rng_shft_i and rng_shft_type_i[iDum] != 0 and ln1.lstrip() != ln1: 
                 # and rng_shft_type_i[i_ln] != 0: 
                 n_dum = round(4 *rng_shft_type_i[iDum])
                 if n_dum < 0:
@@ -810,17 +875,31 @@ for matFileNm in matFileNms:
     Lines = Lines1    
     # ================================================================================
 
+
+    #  Sec. 6.1: @ ---> lambda function ======================================================
+    Lines1 = []
+    for ln in Lines:
+        ln1 = ln
+        if '@' in ln1:
+            idx = ln1.find('@')
+            ln11 = ln1[idx:]
+            i0 = ln11.find('(')
+            i1 = ln11.find(')')
+            lambdaVars = ln11[i0+1:i1]
+            lhs = ln1[:ln1.find('=')]
+            
+            ln1 = lhs + ' = lambda ' + lambdaVars + ' : ' + ln11[i1+1:]
+        Lines1 = store_line(Lines1, ln1, get_vector_elements.error_msg)
+    Lines = Lines1
+    # ============================================================================================================ 
+
+
     #  Sec. 7: convert "(" to "["  ============================================================
     Lines1 = []
     for ln in Lines:
 
         ln1 = ln
-        
-        # DEBUG:
-        if 't_t_0' in ln and 'cnd' in ln:
-            print('')
-        #
-        
+     
         n_blanks = 0
         if len(ln1) > 0: 
             while ln1[n_blanks] == ' ': n_blanks += 1
@@ -876,7 +955,7 @@ for matFileNm in matFileNms:
             if (not ('#' in ln_before_par)) and len(word_before_par) > 0: 
                 # if the line is not a commented line
                 wrdy.get_par_content(ln1, idx0, i_pr, ln_after_par, \
-                    word_before_par, list_py_funcs, par_type)
+                    word_before_par, list_mat_py_funcs, par_type)
                 par_content = wrdy.par_content
                 ln_after_par_closed = wrdy.txt_after_par_closed
                 if len(par_content) > 0:
@@ -973,7 +1052,7 @@ for matFileNm in matFileNms:
     #  Sec. 9: change expressions of "[str1, str2, ...]" to [str1+str2+...] ===================
 
     Lines1 = []
-    lst_vec_no_change = []
+    lst_vec_no_change = [] # 👈🏼 Needed so that MATLAB commands such as "A_str = ['str1', 'str2', ...]" are not to be confused with vectors
     z=0
     for ln in Lines:
         ln1 = ln
@@ -1019,73 +1098,87 @@ for matFileNm in matFileNms:
     ln1_prev = ''
     lst_taken_words = ['if', 'for']
     for i_ln, ln in enumerate(Lines):
-        ln1 = ln
         
-        might_be_vec = True
-        for lt in lst_taken_words:
-            if lt in ln: might_be_vec = False
         
-        if might_be_vec:        
-            # 1. Vektor erkennen:
-            [lne, i_brl] = extract_from_line_breaks(Lines[i_ln-0:])
-            is_in_broken_line_range = False
-            for rngbl in rngs_broken_lines:
-                if i_ln in rngbl:
-                    is_in_broken_line_range = True
-                    break
-            if (not is_in_broken_line_range):        
-                if (not ln1 in lst_vec_no_change):
+        # Check if this line is in broken range (so that we ommit it, since we have merged the broken lines in a previous iteration)
+        # \==================================================\==================================================\==================================================
+        is_in_broken_line_range = False
+        for rngbl in rngs_broken_lines:
+            if i_ln in rngbl:
+                is_in_broken_line_range = True
+                break
+        # \==================================================\==================================================\==================================================    
+            
+        if not is_in_broken_line_range:
+            ln1 = ln
+            
+            might_be_vec = True
+            for lt in lst_taken_words:
+                if lt in ln: might_be_vec = False
+            
+            if might_be_vec:        
+                # 1. Vektor erkennen:
+                [lne, i_brl] = extract_from_line_breaks(Lines[i_ln-0:])
+                is_in_broken_line_range = False
+                for rngbl in rngs_broken_lines:
+                    if i_ln in rngbl:
+                        is_in_broken_line_range = True
+                        break
+                if (not is_in_broken_line_range):        
+                    if (not ln1 in lst_vec_no_change):
 
-                    # debugging
-                    if '# REFERENCE TRAJECTORY FOR LOW LEVEL CONTROLLER -' in ln1_prev:
-                        print('')
-                    # 
+                        # debugging
+                        if '# REFERENCE TRAJECTORY FOR LOW LEVEL CONTROLLER -' in ln1_prev:
+                            print('')
+                        # 
 
-                    # search for line breaks and get actual line
-                    if i_brl > 0:
-                        rngs_broken_lines.append(range(i_ln+1,i_ln+i_brl+1))
-                        ln1 = lne
-                    [elemente, inhalt_urspr, is_matrix, inhalt] = get_vector_elements(ln1)
-                    is_vec = (len(elemente) > 1) and (not is_matrix)
-                    if is_vec:
-                        inhalt_neu = elemente[0]
-                        for e in elemente[1:]:
-                            inhalt_neu += ', ' + e      
-                        ln1 = ln1.replace(inhalt_urspr, inhalt_neu)    
-                    elif is_matrix:
-                        L = len(str_ends_with)
-                        inhalt_neu = elemente[0]
-                        dum1 =  ', '
-                        for e in elemente[1:]:
-                            ends_wth = False
-                            for ii in range(L):
-                                ie = str_ends_with[ii][0]
-                                if len(e)>=len(ie):
+                        # search for line breaks and get actual line
+                        rngs_broken_lines_I = []
+                        if i_brl > 0:
+                            for iid in range(i_brl+1): rngs_broken_lines_I.append(i_ln + iid)
+                            rngs_broken_lines.append(rngs_broken_lines_I)
+                            ln1 = lne
+                        [elemente, inhalt_urspr, is_matrix, inhalt] = get_vector_elements(ln1)
+                        is_vec = (len(elemente) > 1) and (not is_matrix)
+                        if is_vec:
+                            inhalt_neu = elemente[0]
+                            for e in elemente[1:]:
+                                inhalt_neu += ', ' + e      
+                            ln1 = ln1.replace(inhalt_urspr, inhalt_neu)    
+                        elif is_matrix:
+                            L = len(str_ends_with)
+                            inhalt_neu = elemente[0]
+                            dum1 =  ', '
+                            for e in elemente[1:]:
+                                ends_wth = False
+                                for ii in range(L):
+                                    ie = str_ends_with[ii][0]
+                                    if len(e)>=len(ie):
 
-                                    if str_ends_with[ii][1] == 'ends':
-                                        cnd1 = e[-len(ie):] == ie
-                                    elif str_ends_with[ii][1] == 'is':
-                                        cnd1 = e == ie
+                                        if str_ends_with[ii][1] == 'ends':
+                                            cnd1 = e[-len(ie):] == ie
+                                        elif str_ends_with[ii][1] == 'is':
+                                            cnd1 = e == ie
 
-                                    if cnd1:
-                                        ends_wth = True
+                                        if cnd1:
+                                            ends_wth = True
+                                            break
+                                    else:
                                         break
-                                else:
-                                    break
 
-                            if not ends_wth:
-                                inhalt_neu += dum1 + e
-                                dum1 =  ', '
-                            else:
-                                inhalt_neu += e
-                                if e[-1] == '[':
-                                    dum1 = ''
-                                else:
+                                if not ends_wth:
+                                    inhalt_neu += dum1 + e
                                     dum1 =  ', '
-                        ln1 = ln1.replace(inhalt_urspr, inhalt_neu)   
-                        ln1 = ln1.replace(inhalt_urspr, inhalt_neu) 
-        Lines1 = store_line(Lines1, ln1, get_vector_elements.error_msg)
-        ln1_prev = ln1
+                                else:
+                                    inhalt_neu += e
+                                    if e[-1] == '[':
+                                        dum1 = ''
+                                    else:
+                                        dum1 =  ', '
+                            ln1 = ln1.replace(inhalt_urspr, inhalt_neu)   
+                            ln1 = ln1.replace(inhalt_urspr, inhalt_neu) 
+            Lines1 = store_line(Lines1, ln1, get_vector_elements.error_msg)
+            ln1_prev = ln1
     Lines = Lines1  
 
 
@@ -1093,7 +1186,7 @@ for matFileNm in matFileNms:
         # wrdy = parenthesis_cls()
         # wrdy.get_par_content(ln1, 0, lst_operators)
         # # get_par_content(self, ln1, idx0, i_pr, ln_after_par,\
-        #     #  word_before_par, list_py_funcs, par_type)
+        #     #  word_before_par, list_mat_py_funcs, par_type)
         # par_content = wrdy.par_content
         # print(par_content)
         # parenthesis_cls get_word_before_par(self, s_in, lst_operators, idx0):
@@ -1172,7 +1265,19 @@ for matFileNm in matFileNms:
     # ================================================================================
 
 
-    #  Sec. 14: Loading modules ===============================================================
+    # Sec. 14 PATCH. 1: Remove ";" from translated script
+    # Motivation for the patch: the fact that we are not yet dealing with nested vectors 
+    # ---> some ";" remain, which can be directly replaced
+    Lines1 = []
+    for ln in Lines:
+        ln1 = ln.replace(';', ',')
+        Lines1 = store_line(Lines1, ln1, get_vector_elements.error_msg)
+    Lines = Lines1
+    # ================================================================================
+    
+
+
+    #  Sec. 15: Loading modules ===============================================================
     Lines1 = []
     for ln0 in modules2load: 
         Lines1.append(ln0 + '\n')
@@ -1180,6 +1285,8 @@ for matFileNm in matFileNms:
         Lines1.append(ln)
     Lines = Lines1
     # ================================================================================
+
+
 
 
     # PRINT Python code ========================================================================
