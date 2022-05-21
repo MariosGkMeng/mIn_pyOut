@@ -44,7 +44,8 @@
 # 18. CORR: 'GHG_CASADI_new_check_units' has many mistakes 
 # 19. CORR: When MATLAB line doesn't end with ";", it is not treated as a full line and is merged with the next!! 
 # 20. OPT: get_word_before_par ---> perhaps can make it more efficient via regex
-# 21. CORR: get_word_before_par: does not recognise existence of dict
+# 21. ✔ get_word_before_par: does not recognise existence of dict
+#     |__ SOLVED: by regex search  
 # =================================================================================
 # =================================================================================
 
@@ -59,6 +60,21 @@ from findOccurrences import findOccurrences
 vec = lambda x: np.array(x)    
 
 for i in range(15): print("      ")
+
+
+
+# # PLAYGROUND \==================================================
+# # \==================================================
+
+# wrd = " This is a dd1s['special'] word yall "
+
+# patt1 = r"\w+\['\w+'\]"
+# popo = re.findall(patt1, wrd)
+
+# print('')
+
+# # \==================================================
+
 
 
 
@@ -109,6 +125,21 @@ class parenthesis_cls():
     def get_word_before_par(self, s_in, lst_operators, idx0):
         # get a word before the beginning of a parenthesis
 
+
+        # recognise dict variable
+        # \==================================================
+        
+        
+        patt = r"\w+\['\w+'\]" # (word, followed by word in "['']")
+        lstDicts = re.findall(patt, s_in)
+        lstDicts_converted = []
+        for l in lstDicts:
+            l_conv = l.replace("['", '__').replace("']", '')
+            lstDicts_converted.append(l_conv)
+            s_in = s_in.replace(l, l_conv)
+        
+        # \==================================================
+
         word_before_par = ''
         if not ('#' in s_in): # non commented line
             p11 = []
@@ -131,7 +162,12 @@ class parenthesis_cls():
                     word_before_par = s_in[p1+1:idx0] 
         
         word_before_par = word_before_par.replace(' ', '')
+        
+        for iL, l in enumerate(lstDicts):
+            word_before_par = word_before_par.replace(lstDicts_converted[iL], l)
+                
         # return word_before_par
+        
         self.y.append(word_before_par)
         self.word_before_par = word_before_par
 
@@ -346,7 +382,8 @@ list_mat_py_funcs = [\
     'find', 'size', 'sin', 'cos', 'num2str', 'str',\
     'make_signals_continuous', 'strcmp', 'min',\
     'max', 'norm', 'eval_g', 'reshape', 'tan', 'plant_model',\
-    'update_problem_CASADI', 'jacobian', 'vertcat', 'Function', 'enumerate', 'ctr_memory']
+    'update_problem_CASADI', 'jacobian', 'vertcat', 'Function',\
+    'enumerate', 'ctr_memory', 'distance_from_obstacle']
 # ==================================================================================================
 
 # List of operators
