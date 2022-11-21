@@ -52,6 +52,8 @@
 # 24. CORR: Confusion of %f.%f for f['f'], wherein by "%f" we mean "int"
 # 25. CORR: Sec. 7, convMode = 1: "e = (z - theta(:, n)'*phi)": theta(:, n) not converted, but when line is: 
 #                                 "e = z - theta(:, n)'*phi", then theta(:, n) is converted correctly
+# 26. DEV: Sec. 15: convert slice to linspace --> check example at beginning of "playground". Solved most of it,
+#       but have to exclude the case of the slice being inside a variable. 
 #                  
 # =================================================================================
 # =================================================================================
@@ -473,7 +475,11 @@ def print_dict_beautifully(d, lvl):
         # dc = dn    
         # i+=1
         
-    
+def remove_group(s, group):
+    for g in group:
+        s = s.replace(g, '')
+        
+    return s
     
 # Helper functions =================================================================
 
@@ -618,6 +624,39 @@ if is_playtime:
     
     
     
+    
+    #  Sec. 15: convert slice to linspace ============================================================
+    
+    l = " x= g(10:h)+ 5:h"
+    
+    popo = re.findall(\
+        r"[ =+]\w+:\w+:\w+",\
+        l)
+    
+    crs = [' ','=','+','-']
+    patt = '[' + ''.join(crs) + ']' + "*\w+:\w+"
+    popo = re.findall(\
+        patt,\
+        l)   
+    
+    popo = [remove_group(x, crs) for x in popo]
+    
+    for pp in popo:
+        nums = pp.split(':')
+        lpp = 'np.linspace(' + nums[0] + ', ' + nums[1]
+        if len(nums) == 3:
+           lpp += ', ' * nums[2]
+           
+        lpp += ')'
+    
+        l = l.replace(pp, lpp)
+    print(l)
+    
+    
+    # ===============================================================================================
+
+    
+    
     # Find pattern for programming variable
     
     patt1 = r"[a-z, A-Z, 0-9,_]*"
@@ -640,39 +679,7 @@ if is_playtime:
 
     
     #
-    
-    
-    # A non regex approach for struct handling
-    # Criteria:
-    # 1. starts with alphabet
-    # 2. has only \w in between
-    #   otherwise cancel element
-    
-    
-    l = " d1.Var1.per_1.per2 + p.om.p1^2 = 1"
-    
-    l1=l.split(".")
-    
-    print(l1)
-    
-    
-    delimiters = tuple([x for x in LIST['operators'] if x!='.'])
-    regex_pattern = '|'.join(map(re.escape, delimiters))
-    l = " d1.Var1.per_1.per2 + p.om.p1^2 = 1"
-
-    l1 = re.split(regex_pattern, l)
-    l1 = [x for x in l1 if len(x)>0]
-    lcp = l
-    for l1i in l1:
-        l1is = l1i.split('.')
-        if len(l1is) > 1:
-            ln1s_transformed = l1is[0]
-            ln1s_transformed += ''.join(["['" + x + "']" for x in l1is[1:]])
-            
-            lcp = lcp.replace(l1i, ln1s_transformed)
-        
-    #
-    
+  
     
     lstp = ['a', 'c', 'd', 'e']
     
@@ -1891,9 +1898,16 @@ for matFileNm in matFileNms:
     Lines = Lines1
     # ================================================================================
     
+    #  Sec. 15: convert slice to linspace ============================================================
+    
+    #UNDER_DEV
+    
+    
+    
+    # ===============================================================================================
 
 
-    #  Sec. 15: Loading modules ===============================================================
+    #  Sec. 16: Loading modules ===============================================================
     Lines1 = []
     for ln0 in modules2load: 
         Lines1.append(ln0 + '\n')
